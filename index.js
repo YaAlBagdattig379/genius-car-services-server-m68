@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const Object = new MongoClient('');
 
@@ -21,7 +22,16 @@ async function run() {
         await client.connect();
         const servicesCollection = client.db("geniusCar-m66").collection('services');
         const orderCollection = client.db("geniusCar-m66").collection('order');
-
+        
+        // auth
+        app.post('/login',(req,res)=>{
+          const user = req.body;
+          const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{
+            expiresIn : '1d'
+          });
+          res.send({accessToken});
+        }) 
+        // Services Api
         app.get('/service', async(req,res)=>{
           const query = {};
           const cursor = servicesCollection.find(query);
@@ -77,3 +87,5 @@ app.get('/',(req,res)=>{
 app.listen(port,()=>{
     console.log('listening to  porting currently',port)
 })
+
+
