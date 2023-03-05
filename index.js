@@ -49,6 +49,16 @@ async function run() {
         })
 
         // order collection API 
+        app.get('/order',async(req,res)=>{
+           const email = req.query.email;
+          //  const query = {};
+           const query = {email: email};
+           const cursor = orderCollection.find(query);
+           const orders = await cursor.toArray();
+           res.send(orders);
+
+        })
+
         app.post('/order',async(req,res)=>{
           const order = req.body;
           const result = await orderCollection.insertOne(order);
@@ -61,10 +71,9 @@ async function run() {
 }
 run().catch(console.dir);
 
-
 app.get('/',(req,res)=>{
     res.send('running genius server side');
 })
 app.listen(port,()=>{
-    console.log('listening to  porting currently')
+    console.log('listening to  porting currently',port)
 })
