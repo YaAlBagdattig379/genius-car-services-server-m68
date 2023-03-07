@@ -15,20 +15,25 @@ app.use(cors());
 app.use(express.json());
 
 
-function verifyJWT(req, res, next){
-    const authHeader = req.headers.authorization;
+async function verifyJWT(req, res, next){
+  const authHeader = req.headers.authorization;
+   try {
     if(!authHeader){
       return res.status(401).send({message: 'unauthorized access'});
     }
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET,(error,decoded)=>{
-            if(error){
-              return res.status(403).send({message:'Forbidden access'});
-            }
-            req.decoded = decoded;
-            console.log('decoded',decoded);
-            next(); 
+      if(error){
+          return res.status(403).send({message:'Forbidden access'});
+      }
+      req.decoded = decoded;
+      console.log('decoded',decoded);
+      console.log('inside verified JWT',authHeader) 
+      next(); 
     })
+   } catch (error) {
+      console.log(error)
+   }  
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xw2abv6.mongodb.net/?retryWrites=true&w=majority`;
@@ -41,7 +46,7 @@ async function run() {
         const orderCollection = client.db("geniusCar-m66").collection('order');
         
         // auth
-        app.post('/login',(req,res)=>{
+        app.post('/login',async (req,res)=>{
           const user = req.body;
           const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{
             expiresIn : '1d'
@@ -77,14 +82,18 @@ async function run() {
 
         // order collection API 
         app.get('/order',verifyJWT,async(req,res)=>{
-           const authHeader = req.headers.authorization;
-          //  console.log(authHeader) 
+           const decodedEmail = req.decoded.email;
            const email = req.query.email;
+           console.log(decodedEmail,email)
           //  const query = {};
-           const query = {email: email};
-           const cursor = orderCollection.find(query);
-           const orders = await cursor.toArray();
-           res.send(orders);
+           if(decodedEmail === email){
+             const query = { email : email};
+             const cursor = orderCollection.find(query);
+             const orders = await cursor.toArray();
+             res.send(orders);
+           }else{
+            res.status(403).send({message:'Forbidden access'})
+           }
 
         })
 
@@ -106,5 +115,3 @@ app.get('/',(req,res)=>{
 app.listen(port,()=>{
     console.log('listening to  porting currently',port)
 })
-
-
