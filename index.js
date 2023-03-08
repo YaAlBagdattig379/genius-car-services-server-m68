@@ -14,9 +14,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 async function verifyJWT(req, res, next){
   const authHeader = req.headers.authorization;
+  console.log('inside verified JWT',authHeader) 
    try {
     if(!authHeader){
       return res.status(401).send({message: 'unauthorized access'});
@@ -28,7 +28,6 @@ async function verifyJWT(req, res, next){
       }
       req.decoded = decoded;
       console.log('decoded',decoded);
-      console.log('inside verified JWT',authHeader) 
       next(); 
     })
    } catch (error) {
@@ -79,7 +78,7 @@ async function run() {
           const result = await servicesCollection.deleteOne(query);
           res.send(result);
         })
-
+      
         // order collection API 
         app.get('/order',verifyJWT,async(req,res)=>{
            const decodedEmail = req.decoded.email;
