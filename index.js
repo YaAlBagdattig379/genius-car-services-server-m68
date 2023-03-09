@@ -40,8 +40,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
   try {
-        //  client.connect();
-        await client.connect();
+         client.connect();
+        // await client.connect();
         const servicesCollection = client.db("geniusCar-m66").collection('services');
         const orderCollection = client.db("geniusCar-m66").collection('order');
         
@@ -59,6 +59,10 @@ async function run() {
           const cursor = servicesCollection.find(query);
           const services = await cursor.toArray();
           res.send(services);
+        })
+        // test for 
+        app.get('/test',async(req,res)=>{
+          res.send('hello world')
         })
         app.get('/service/:id', async(req,res)=>{
              const id = req.params.id;
